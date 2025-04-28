@@ -15,6 +15,7 @@ import axios from 'axios';
 import AIGeneratedCodeView from './AIGeneratedCodeView';
 import { jsPDF } from 'jspdf';
 import Loader from './CSS/Loader';
+import PopupModal from './CSS/PopupModal';
 
 const nodeTypes = {
   microservice: MicroserviceNode,
@@ -29,6 +30,8 @@ const CanvasBoard = () => {
   const [generatedCode, setGeneratedCode] = useState('');
   const [showGeneratedCode, setShowGeneratedCode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupMessage, setPopupMessage] = useState('');
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -115,6 +118,11 @@ const CanvasBoard = () => {
   );
 
   const handleSaveAndGenerate = async () => {
+    if (nodes.filter(n => n.type === 'microservice').length === 0) {
+      setPopupMessage('⚠️ No Microservices Found! Please add at least one microservice before saving.');
+      setShowPopup(true);
+      return;
+    }
     setIsLoading(true);
     const promptParts = [];
   
@@ -268,7 +276,12 @@ const CanvasBoard = () => {
           <Loader />
         </div>
       )}
-
+      {showPopup && (
+      <PopupModal
+        message={popupMessage}
+        onClose={() => setShowPopup(false)}
+      />
+    )}
       {showGeneratedCode ? (
         <AIGeneratedCodeView
           code={generatedCode}
