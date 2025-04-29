@@ -22,6 +22,13 @@ const nodeTypes = {
   apiGateway: ApiGatewayNode,
   database: DatabaseNode,
 };
+const isSameCanvasState = (nodes, edges, prevNodes, prevEdges) => {
+  return (
+    JSON.stringify(nodes) === JSON.stringify(prevNodes) &&
+    JSON.stringify(edges) === JSON.stringify(prevEdges)
+  );
+};
+
 
 const CanvasBoard = () => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
@@ -123,6 +130,16 @@ const CanvasBoard = () => {
       setShowPopup(true);
       return;
     }
+    const prevState = JSON.parse(localStorage.getItem('lastCanvasState'));
+    const prevCode = localStorage.getItem('lastGeneratedCode');
+
+    if (prevState && isSameCanvasState(nodes, edges, prevState.nodes, prevState.edges)) {
+    if (prevCode) {
+      setGeneratedCode(prevCode);
+      setShowGeneratedCode(true);
+      return;
+    }
+    }
     setIsLoading(true);
     const promptParts = [];
   
@@ -205,6 +222,9 @@ const CanvasBoard = () => {
       const code = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No code received';
       setGeneratedCode(code);
       setShowGeneratedCode(true);
+
+      localStorage.setItem('lastCanvasState', JSON.stringify({ nodes, edges }));
+      localStorage.setItem('lastGeneratedCode', code);
     } catch (err) {
       console.error('❌ Failed to generate code:', err);
       alert('Error generating code. Check console.');

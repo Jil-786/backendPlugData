@@ -35,7 +35,7 @@ export default function AppLayout() {
             title="Database"
             icon={<FaDatabase />}
             description="Choose your DB"
-            options={['MongoDB', 'MySQL', 'PostgreSQL', 'H2']}
+            options={['MongoDB', 'MySQL', 'PostgreSQL', 'H2','Redis']}
             onOptionSelect={(db) => console.log('Selected DB:', db)}
           />
           {/* You can add more EntityCards here and scroll will appear if needed */}
