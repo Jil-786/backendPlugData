@@ -1,51 +1,97 @@
+import PremiumModal from './profile/PremiumModal'; // adjust path if needed
+import { useState } from 'react';
 import EntityCard from './EntityCard';
 import CanvasBoard from './CanvasBoard';
-import { FaDatabase, FaMicrochip, FaGlobe } from 'react-icons/fa';
+import { FaDatabase, FaMicrochip, FaGlobe, FaUserCircle } from 'react-icons/fa';
+import TokensModal from './profile/TokensModal';
 
 export default function AppLayout() {
+  const user = { name: 'John Doe', email: 'john@example.com', isPremium: false };
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  const [showTokensModal, setShowTokensModal] = useState(false);
+  const tokens = 1;      // Replace with actual token logic from backend/localStorage
+  const maxTokens = user.isPremium ? 5 : 1;
+
   return (
-    <div className="w-screen h-screen flex flex-col overflow-hidden bg-gray-100">
-      {/* 💡 Cool App Header */}
-      <header className="px-6 py-4 bg-white shadow-md border-b border-gray-200">
-        <h1 className="text-3xl font-extrabold text-blue-600 tracking-tight">
-          🔌 BackendPlug
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Visually build and connect your Spring Boot architecture
-        </p>
-      </header>
+    <>
+      <div className="w-screen h-screen flex flex-col overflow-hidden bg-gray-100">
+        <header className="relative px-6 py-4 bg-white shadow-md border-b flex justify-between items-center">
+          {/* Header Title */}
+          <div>
+            <h1 className="text-3xl font-extrabold text-blue-600 tracking-tight">
+              🔌 BackendPlug
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Visually build and connect your Spring Boot architecture
+            </p>
+          </div>
 
-      {/* 🔧 Body Layout */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Left Panel - Scrollable Entity Cards */}
-        <div className="w-64 bg-white rounded-tr-xl rounded-br-xl shadow-md p-4 space-y-4 overflow-y-auto">
-          <h2 className="text-xl font-bold mb-2">Components</h2>
-          <EntityCard
-            title="Microservice"
-            icon={<FaMicrochip />}
-            description="Spring Boot Service"
-          />
-          <EntityCard
-          title="API Gateway"
-          icon={<FaGlobe />}
-          description=" Spring Cloud Gateway"
-          options={['None', 'Eureka', 'Consul']}
-          />
-          <EntityCard
-            title="Database"
-            icon={<FaDatabase />}
-            description="Choose your DB"
-            options={['MongoDB', 'MySQL', 'PostgreSQL', 'H2','Redis']}
-            onOptionSelect={(db) => console.log('Selected DB:', db)}
-          />
-          {/* You can add more EntityCards here and scroll will appear if needed */}
-        </div>
+          {/* Profile Icon */}
+          <div className="relative">
+            <button
+              className="text-gray-600 hover:text-blue-600 focus:outline-none"
+              onClick={() => setShowProfileMenu((prev) => !prev)}
+            >
+              <FaUserCircle size={30} />
+            </button>
 
-        {/* Right Panel - Full Canvas */}
-        <div className="flex-1 overflow-hidden">
-          <CanvasBoard />
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-60 bg-white rounded-lg shadow-lg border z-50">
+                <div className="px-4 py-3 border-b">
+                  <p className="font-semibold">{user.name}</p>
+                  <p className="text-sm text-gray-500">{user.email}</p>
+                  <p className="mt-1 text-xs text-green-600">
+                    {user.isPremium ? '💎 Premium User' : 'Free User'}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowPremiumModal(true)}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  💼 Premium Plan
+                </button>
+                <button
+                  onClick={() => setShowTokensModal(true)}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                >
+                  🎟️ Tokens
+                </button>
+                <button
+                  onClick={() => console.log('User signed out')}
+                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 text-red-500"
+                >
+                  🚪 Sign Out
+                </button>
+              </div>
+            )}
+          </div>
+        </header>
+
+        {/* Layout Body */}
+        <div className="flex flex-1 overflow-hidden">
+          <div className="w-64 bg-white rounded-tr-xl rounded-br-xl shadow-md p-4 space-y-4 overflow-y-auto">
+            <h2 className="text-xl font-bold mb-2">Components</h2>
+            <EntityCard title="Microservice" icon={<FaMicrochip />} description="Spring Boot Service" />
+            <EntityCard title="API Gateway" icon={<FaGlobe />} description="Spring Cloud Gateway" options={['None', 'Eureka', 'Consul']} />
+            <EntityCard title="Database" icon={<FaDatabase />} description="Choose your DB" options={['MongoDB', 'MySQL', 'PostgreSQL', 'H2', 'Redis']} />
+          </div>
+
+          <div className="flex-1 overflow-hidden">
+            <CanvasBoard />
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Modals */}
+        {showPremiumModal && <PremiumModal onClose={() => setShowPremiumModal(false)} />}
+        {showTokensModal && (
+          <TokensModal
+            onClose={() => setShowTokensModal(false)}
+            tokens={tokens}
+            maxTokens={maxTokens}
+          />
+        )}
+    </>
   );
 }
