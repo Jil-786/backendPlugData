@@ -22,7 +22,7 @@ export default function PremiumModal({ onClose }) {
             <div className="border-2 border-yellow-400 rounded-lg p-4 flex-1 bg-yellow-50">
               <h3 className="text-lg font-semibold text-yellow-800">💎 Premium Plan</h3>
               <ul className="mt-2 text-sm text-yellow-700 space-y-1">
-                <li>✅ 5 Microservice per day</li>
+                <li>✅ 3 Microservice per day</li>
                 <li>✅ PDF Export</li>
                 <li>✅ API Deployment Tools</li>
               </ul>

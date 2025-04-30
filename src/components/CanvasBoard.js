@@ -8,9 +8,10 @@ import ReactFlow, {
   ReactFlowProvider,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import MicroserviceNode from './MicroserviceNode';
-import ApiGatewayNode from './ApiGatewayNode';
-import DatabaseNode from './DataBaseNode';
+import MicroserviceNode from './Nodes/MicroserviceNode';
+import ApiGatewayNode from './Nodes/ApiGatewayNode';
+import DatabaseNode from './Nodes/DataBaseNode';
+import CacheServerNode from './Nodes/CacheServerNode';
 import axios from 'axios';
 import AIGeneratedCodeView from './AIGeneratedCodeView';
 import { jsPDF } from 'jspdf';
@@ -21,6 +22,7 @@ const nodeTypes = {
   microservice: MicroserviceNode,
   apiGateway: ApiGatewayNode,
   database: DatabaseNode,
+  cacheServer: CacheServerNode,
 };
 const isSameCanvasState = (nodes, edges, prevNodes, prevEdges) => {
   return (
@@ -102,7 +104,17 @@ const CanvasBoard = () => {
             option: parsed.option || 'MySQL',
           },
         };
-      } else {
+      } else if (parsed.type === 'Cache Server') {
+        newNode = {
+          id: `${+new Date()}`,
+          type: 'cacheServer',
+          position,
+          data: {
+            label: `Cache Server - ${parsed.option || 'Redis'}`,
+            option: parsed.option || 'Redis',
+          },
+        };
+      }else {
         newNode = {
           id: `${+new Date()}`,
           type: 'default',
@@ -172,6 +184,11 @@ const CanvasBoard = () => {
       const discovery = gw.data.discoveryType || 'None';
       promptParts.push(`API Gateway: ${gw.data.label}\nService Discovery: ${discovery}`);
     });
+    const caches = nodes.filter((n) => n.type === 'cacheServer');
+      caches.forEach((c) => {
+      promptParts.push(`Cache Server: ${c.data.label}`);
+    });
+
     
   
     // 🌐 Generate field-level data flow info

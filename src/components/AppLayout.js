@@ -2,16 +2,16 @@ import PremiumModal from './profile/PremiumModal'; // adjust path if needed
 import { useState } from 'react';
 import EntityCard from './EntityCard';
 import CanvasBoard from './CanvasBoard';
-import { FaDatabase, FaMicrochip, FaGlobe, FaUserCircle } from 'react-icons/fa';
+import { FaDatabase, FaMicrochip, FaGlobe, FaUserCircle,FaBolt } from 'react-icons/fa';
 import TokensModal from './profile/TokensModal';
 
 export default function AppLayout() {
-  const user = { name: 'John Doe', email: 'john@example.com', isPremium: false };
+  const user = { name: 'John Doe', email: 'john@example.com', isPremium: true };
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showTokensModal, setShowTokensModal] = useState(false);
   const tokens = 1;      // Replace with actual token logic from backend/localStorage
-  const maxTokens = user.isPremium ? 5 : 1;
+  const maxTokens = user.isPremium ? 3 : 1;
 
   return (
     <>
@@ -74,7 +74,9 @@ export default function AppLayout() {
             <h2 className="text-xl font-bold mb-2">Components</h2>
             <EntityCard title="Microservice" icon={<FaMicrochip />} description="Spring Boot Service" />
             <EntityCard title="API Gateway" icon={<FaGlobe />} description="Spring Cloud Gateway" options={['None', 'Eureka', 'Consul']} />
-            <EntityCard title="Database" icon={<FaDatabase />} description="Choose your DB" options={['MongoDB', 'MySQL', 'PostgreSQL', 'H2', 'Redis']} />
+            <EntityCard title="Database" icon={<FaDatabase />} description="Choose your DB" options={['MongoDB', 'MySQL', 'PostgreSQL', 'H2']} />
+            <EntityCard title="Cache Server" icon={<FaBolt />}  description="Choose a caching solution" options={['Redis', 'Caffeine', 'Ehcache', 'Hazelcast']}/>
+
           </div>
 
           <div className="flex-1 overflow-hidden">
