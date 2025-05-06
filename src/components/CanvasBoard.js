@@ -24,12 +24,38 @@ const nodeTypes = {
   database: DatabaseNode,
   cacheServer: CacheServerNode,
 };
+const normalizeNode = (node) => ({
+  id: node.id,
+  type: node.type,
+  data: {
+    label: node.data.label,
+    fields: node.data.fields || [],
+    option: node.data.option || null,
+    discoveryType: node.data.discoveryType || null,
+  },
+});
+
+const normalizeEdge = (edge) => ({
+  id: edge.id,
+  source: edge.source,
+  target: edge.target,
+  sourceHandle: edge.sourceHandle || null,
+  targetHandle: edge.targetHandle || null,
+});
+
 const isSameCanvasState = (nodes, edges, prevNodes, prevEdges) => {
+  const normalizedCurrentNodes = nodes.map(normalizeNode);
+  const normalizedPrevNodes = prevNodes.map(normalizeNode);
+
+  const normalizedCurrentEdges = edges.map(normalizeEdge);
+  const normalizedPrevEdges = prevEdges.map(normalizeEdge);
+
   return (
-    JSON.stringify(nodes) === JSON.stringify(prevNodes) &&
-    JSON.stringify(edges) === JSON.stringify(prevEdges)
+    JSON.stringify(normalizedCurrentNodes) === JSON.stringify(normalizedPrevNodes) &&
+    JSON.stringify(normalizedCurrentEdges) === JSON.stringify(normalizedPrevEdges)
   );
 };
+
 
 
 const CanvasBoard = () => {
