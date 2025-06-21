@@ -24,6 +24,8 @@ const LoginSignupPage = () => {
       }
 
       localStorage.setItem('token', data.token);
+      localStorage.setItem('email', formData.email); // ✅ This line saves the email
+
       alert('✅ Success! Token saved.');
       window.location.href = '/'; // redirect to homepage or dashboard
     } catch (err) {
