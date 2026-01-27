@@ -17,13 +17,94 @@ import AIGeneratedCodeView from './AIGeneratedCodeView';
 import { jsPDF } from 'jspdf';
 import Loader from './CSS/Loader';
 import PopupModal from './CSS/PopupModal';
-
+import JSZip from 'jszip';
 const nodeTypes = {
   microservice: MicroserviceNode,
   apiGateway: ApiGatewayNode,
   database: DatabaseNode,
   cacheServer: CacheServerNode,
 };
+
+// 📦 Full AI-to-Initializr dependency mapping
+const depMap = {
+  // Core Spring Boot
+  'spring-boot-starter-web': 'web',
+  'spring-boot-starter-data-jpa': 'data-jpa',
+  'spring-boot-starter-validation': 'validation',
+  'spring-boot-starter': 'core',
+  'spring-boot-starter-aop': 'aop',
+  'spring-boot-devtools': 'devtools',
+
+  // Databases
+  'mysql-connector-j': 'mysql',
+  'postgresql': 'postgresql',
+  'spring-boot-starter-data-mongodb': 'data-mongodb',
+  'mongodb-driver-sync': 'mongodb',
+  'h2': 'h2', // added H2
+
+  // Caching
+  'spring-boot-starter-cache': 'cache',
+  'spring-boot-starter-data-redis': 'data-redis',
+  'io.github.ben-manes.caffeine:caffeine': 'caffeine',
+  'org.ehcache:ehcache': 'ehcache',
+  'com.hazelcast:hazelcast': 'hazelcast',
+
+  // Messaging & Streaming
+  'spring-kafka': 'kafka',
+  'spring-boot-starter-amqp': 'amqp',
+
+  // Cloud & Discovery
+  'spring-cloud-starter-openfeign': 'openfeign',
+  'spring-cloud-starter-netflix-eureka-client': 'cloud-eureka',
+  'spring-cloud-starter-consul-discovery': 'consul-discovery',
+  'spring-cloud-starter-gateway': 'cloud-gateway',
+
+  // Security
+  'spring-boot-starter-security': 'security',
+  'spring-security-oauth2': 'oauth2',
+  'spring-security-oauth2-client': 'oauth2-client',
+  'spring-security-oauth2-resource-server': 'oauth2-resource-server',
+
+  // Monitoring & API Docs
+  'spring-boot-starter-actuator': 'actuator',
+  'micrometer-registry-prometheus': 'prometheus',
+  'springdoc-openapi-ui': 'openapi',
+
+  // UI
+  'spring-boot-starter-thymeleaf': 'thymeleaf',
+  'spring-boot-starter-mustache': 'mustache',
+
+  // Helpers
+  'lombok': 'lombok',
+  'mapstruct': 'mapstruct',
+  'modelmapper': 'modelmapper',
+
+  // Utilities
+  'spring-boot-starter-mail': 'mail',
+  'spring-boot-starter-batch': 'batch',
+  'spring-boot-starter-quartz': 'quartz',
+  'spring-retry': 'retry',
+  'spring-session-core': 'session',
+  'spring-websocket': 'websocket',
+};
+
+
+
+// 🔍 Extracts mapped dependencies from AI's response (e.g. pom.xml)
+const extractDependenciesFromAIResponse = (code) => {
+  const matchedDeps = new Set();
+  const matches = code.match(/<artifactId>(.*?)<\/artifactId>/g) || [];
+  matches.forEach(tag => {
+    const raw = tag.replace(/<\/?artifactId>/g, '').trim();
+    if (depMap[raw]) {
+      matchedDeps.add(depMap[raw]);
+    } else {
+      console.warn('🟡 Unmapped dependency from AI:', raw);
+    }
+  });
+  return Array.from(matchedDeps);
+};
+
 const normalizeNode = (node) => ({
   id: node.id,
   type: node.type,
@@ -67,6 +148,8 @@ const CanvasBoard = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupMessage, setPopupMessage] = useState('');
+  const API_URL = process.env.REACT_APP_GEMINI_API_URL;
+
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -258,11 +341,11 @@ const CanvasBoard = () => {
   `;
   
     try {
-      const res = await axios.post('http://localhost:2000/gemini/ask', {
+      const res = await axios.post(API_URL, {
         question: fullPrompt,
       });
   
-      const code = res.data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No code received';
+      const code = res.data;
       setGeneratedCode(code);
       setShowGeneratedCode(true);
 
@@ -276,7 +359,7 @@ const CanvasBoard = () => {
     }
   };
   
-
+  // for PDF download
   const handleDownloadPDF = () => {
     if (!generatedCode || generatedCode.trim() === '') {
       alert('No code to download.');
@@ -332,6 +415,84 @@ const CanvasBoard = () => {
     doc.save('springboot-backend-code.pdf');
   };
 
+  // for Project download
+  const handleDownloadProject = async () => {
+  if (!generatedCode || generatedCode.trim() === '') {
+    alert('No code to analyze.');
+    return;
+  }
+
+  const microserviceNodes = nodes.filter(n => n.type === 'microservice');
+  if (microserviceNodes.length === 0) {
+    alert('No microservices found.');
+    return;
+  }
+
+  const zip = new JSZip();
+
+  if (microserviceNodes.length === 1) {
+    // Single microservice
+    const artifactId = microserviceNodes[0].data.label || 'microservice1';
+    const deps = extractDependenciesFromAIResponse(generatedCode);
+    const depParam = deps.join(',');
+
+    try {
+      const res = await axios.get('http://localhost:9501/project/download', {
+        params: { artifactId, dependencies: depParam },
+        responseType: 'blob',
+      });
+
+      const blob = new Blob([res.data], { type: 'application/zip' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${artifactId}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('❌ Download failed:', err);
+      alert('Download failed. Check console.');
+    }
+  } else {
+    // Multiple microservices - all zipping done in frontend
+    const deps = extractDependenciesFromAIResponse(generatedCode); // or custom per MS if needed
+    const depParam = deps.join(',');
+
+    for (const node of microserviceNodes) {
+      const artifactId = node.data.label || 'microservice';
+      try {
+        const res = await axios.get('http://localhost:9501/project/download', {
+          params: { artifactId, dependencies: depParam },
+          responseType: 'blob',
+        });
+
+        const zipFile = await JSZip.loadAsync(res.data);
+        zip.folder(artifactId);
+        zipFile.forEach((relativePath, file) => {
+          zip.folder(artifactId).file(relativePath, file.async('blob'));
+        });
+      } catch (err) {
+        console.error(`❌ Failed to fetch ZIP for ${artifactId}:`, err);
+        alert(`Failed to fetch project for ${artifactId}`);
+        return;
+      }
+    }
+
+    // Generate combined ZIP
+    const finalZipBlob = await zip.generateAsync({ type: 'blob' });
+    const url = window.URL.createObjectURL(finalZipBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'multi-microservice.zip';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  }
+};
+
   return (
     <ReactFlowProvider>
       {isLoading && (
@@ -350,6 +511,7 @@ const CanvasBoard = () => {
           code={generatedCode}
           onBack={() => setShowGeneratedCode(false)}
           onDownload={handleDownloadPDF}
+          onDownloadProject={handleDownloadProject}
         />
       ) : (
         <div className="w-full h-[90vh] bg-gray-100 rounded-xl overflow-hidden flex flex-col">
