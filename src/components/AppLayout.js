@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import PremiumModal from './profile/PremiumModal';
+//import PremiumModal from './profile/PremiumModal';
 import TokensModal from './profile/TokensModal';
 import EntityCard from './EntityCard';
 import CanvasBoard from './CanvasBoard';
@@ -8,7 +8,7 @@ import { FaDatabase, FaMicrochip, FaGlobe, FaUserCircle, FaBolt } from 'react-ic
 export default function AppLayout() {
   const [email, setEmail] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [showPremiumModal, setShowPremiumModal] = useState(false);
+  // const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [showTokensModal, setShowTokensModal] = useState(false);
   const [tokens, setTokens] = useState(1); // default token
   const isPremium = false; // replace with logic if needed
@@ -53,12 +53,12 @@ export default function AppLayout() {
                     {isPremium ? '💎 Premium User' : 'Free User'}
                   </p>
                 </div>
-                <button
+                {/* <button
                   onClick={() => setShowPremiumModal(true)}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
                 >
                   💼 Premium Plan
-                </button>
+                </button> */}
                 <button
                   onClick={() => setShowTokensModal(true)}
                   className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
@@ -94,7 +94,7 @@ export default function AppLayout() {
         </div>
       </div>
 
-      {showPremiumModal && <PremiumModal onClose={() => setShowPremiumModal(false)} />}
+      {/* {showPremiumModal && <PremiumModal onClose={() => setShowPremiumModal(false)} />} */}
       {showTokensModal && (
         <TokensModal
           onClose={() => setShowTokensModal(false)}

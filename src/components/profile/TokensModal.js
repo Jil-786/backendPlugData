@@ -20,7 +20,7 @@ export default function TokensModal({ onClose, tokens = 1, maxTokens = 5 }) {
               />
             </div>
             <p className="text-sm text-gray-500 mt-1">
-              Tokens reset every 24 hours. Upgrade to Premium for more usage.
+              Tokens reset every 24 hours.
             </p>
           </div>
         </div>

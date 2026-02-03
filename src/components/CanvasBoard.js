@@ -544,6 +544,7 @@ const CanvasBoard = () => {
               nodeTypes={nodeTypes}
               connectOnClick
               zoomOnScroll
+              //preventScrolling
               panOnScroll
               zoomOnPinch
               panOnDrag
